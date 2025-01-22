@@ -1,0 +1,1 @@
+docker build -t stressed-pod .  && docker run -p 5000:5000 stressed-pod

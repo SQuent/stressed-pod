@@ -1,0 +1,9 @@
+dist/
+*.pyc
+__pycache__/
+.pytest_cache/
+.coverage
+htmlcov/
+.env
+.venv
+poetry.toml
