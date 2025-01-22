@@ -1,0 +1,25 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app/app
+    environment:
+      - ENABLE_DYNAMIC_MEMORY_LOAD=false
+      - INITIAL_MEMORY_LOAD=0
+      - FINAL_MEMORY_LOAD=256
+      - MEMORY_LOAD_DURATION=60
+      - STOP_MEMORY_LOAD_AT_END=true
+      - ENABLE_DYNAMIC_CPU_LOAD=false
+      - INITIAL_CPU_LOAD=0
+      - FINAL_CPU_LOAD=0.5
+      - CPU_LOAD_DURATION=60
+      - STOP_CPU_LOAD_AT_END=true
+      - POD_NAME=local-dev
+      - POD_NAMESPACE=default
+      - NODE_NAME=local
+      - HOST_IP=127.0.0.1
+      - POD_IP=127.0.0.1
