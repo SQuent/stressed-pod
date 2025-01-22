@@ -9,7 +9,7 @@ python = "^3.11"
 fastapi = "^0.104.0"
 uvicorn = {extras = ["standard"], version = "^0.24.0"}
 pydantic = "^2.4.2"
-python-multipart = "^0.0.6"
+python-multipart = "^0.0.20"
 psutil = "^5.9.6"
 
 [tool.poetry.group.test.dependencies]
