@@ -29,7 +29,6 @@ def kill_stress_processes():
     """Kill all stress test processes"""
     for proc in psutil.process_iter(["pid", "name", "cmdline"]):
         try:
-            # Chercher les processus python qui exécutent cpu_stress.py ou memory_stress.py
             if proc.info["cmdline"] and "python" in proc.info["cmdline"][0]:
                 cmdline = " ".join(proc.info["cmdline"])
                 if "cpu_stress.py" in cmdline or "memory_stress.py" in cmdline:

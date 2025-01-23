@@ -51,7 +51,12 @@ def test_load_endpoints():
     # Test CPU operations
     response = client.post(
         "/load/cpu/dynamic",
-        json={"start_value": 10, "end_value": 20, "duration": 60, "stop_at_end": True},
+        json={
+            "start_value": 0.1,
+            "end_value": 0.3,
+            "duration": 20,
+            "stop_at_end": True,
+        },
     )
     assert response.status_code == 200
 
@@ -62,6 +67,17 @@ def test_load_endpoints():
     assert response.status_code == 200
 
     # Test Memory operations
+    response = client.post(
+        "/load/cpu/dynamic",
+        json={
+            "start_value": 100,
+            "end_value": 256,
+            "duration": 20,
+            "stop_at_end": True,
+        },
+    )
+    assert response.status_code == 200
+
     response = client.post("/load/memory/start", json={"value": 100})
     assert response.status_code == 200
 
