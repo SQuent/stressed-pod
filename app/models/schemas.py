@@ -3,7 +3,16 @@ from typing import Optional
 from enum import Enum
 
 
-class DynamicLoadRequest(BaseModel):
+class DynamicCPULoadRequest(BaseModel):
+    start_value: float = Field(..., ge=0, description="Starting load")
+    end_value: float = Field(..., ge=0, description="Ending load")
+    duration: int = Field(1, ge=1, description="Duration in secondes")
+    stop_at_end: bool = Field(
+        False, description="Whether to stop load after completion"
+    )
+
+
+class DynamicMemoryLoadRequest(BaseModel):
     start_value: int = Field(..., ge=0, description="Starting load")
     end_value: int = Field(..., ge=0, description="Ending load")
     duration: int = Field(1, ge=1, description="Duration in secondes")

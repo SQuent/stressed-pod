@@ -1,5 +1,9 @@
 from fastapi import APIRouter, HTTPException
-from ..models.schemas import DynamicLoadRequest, LoadRequest
+from ..models.schemas import (
+    DynamicCPULoadRequest,
+    DynamicMemoryLoadRequest,
+    LoadRequest,
+)
 from ..managers.load_manager import LoadManager
 
 router = APIRouter(prefix="/load", tags=["Load Management"])
@@ -7,7 +11,7 @@ load_manager = LoadManager()
 
 
 @router.post("/cpu/dynamic")
-async def start_dynamic_cpu_load(request: DynamicLoadRequest):
+async def start_dynamic_cpu_load(request: DynamicCPULoadRequest):
     """Start a progressive CPU load"""
     try:
         load_manager.dynamic_cpu_load(
@@ -46,7 +50,7 @@ async def stop_cpu_load():
 
 
 @router.post("/memory/dynamic")
-async def start_dynamic_memory_load(request: DynamicLoadRequest):
+async def start_dynamic_memory_load(request: DynamicMemoryLoadRequest):
     """Start a progressive memory load"""
     try:
         load_manager.dynamic_memory_load(

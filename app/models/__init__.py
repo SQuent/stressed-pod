@@ -1,3 +1,15 @@
-from .schemas import DynamicLoadRequest, LoadRequest, ProbeRequest, TerminateRequest
+from .schemas import (
+    DynamicCPULoadRequest,
+    DynamicMemoryLoadRequest,
+    LoadRequest,
+    ProbeRequest,
+    TerminateRequest,
+)
 
-__all__ = ["DynamicLoadRequest", "LoadRequest", "ProbeRequest", "TerminateRequest"]
+__all__ = [
+    "DynamicCPULoadRequest",
+    "DynamicMemoryLoadRequest",
+    "LoadRequest",
+    "ProbeRequest",
+    "TerminateRequest",
+]
