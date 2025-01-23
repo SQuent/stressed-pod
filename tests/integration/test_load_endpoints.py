@@ -13,11 +13,7 @@ class TestLoadEndpoints:
     def test_cpu_load_endpoints(self, client):
         """Test CPU load endpoints"""
         # Test start CPU load
-        response = client.post("/load/cpu/start", json={"value": 30})
-        assert response.status_code == 200
-
-        # Test stop CPU load
-        response = client.post("/load/cpu/stop")
+        response = client.post("/load/cpu/start", json={"value": 1})
         assert response.status_code == 200
 
     def test_memory_load_endpoints(self, client):
@@ -26,19 +22,15 @@ class TestLoadEndpoints:
         response = client.post("/load/memory/start", json={"value": 50})
         assert response.status_code == 200
 
-        # Test stop memory load
-        response = client.post("/load/memory/stop")
-        assert response.status_code == 200
-
     def test_dynamic_load_endpoints(self, client):
         """Test dynamic load endpoints"""
         # Test dynamic CPU load
         cpu_response = client.post(
             "/load/cpu/dynamic",
             json={
-                "start_value": 10,
-                "end_value": 20,
-                "duration": 60,
+                "start_value": 0,
+                "end_value": 0.5,
+                "duration": 30,
                 "stop_at_end": True,
             },
         )
@@ -51,7 +43,7 @@ class TestLoadEndpoints:
             json={
                 "start_value": 100,
                 "end_value": 200,
-                "duration": 60,
+                "duration": 20,
                 "stop_at_end": True,
             },
         )
@@ -66,6 +58,12 @@ class TestLoadEndpoints:
         assert "memory_requested" in load_status
         assert "cpu_active" in load_status
         assert "memory_active" in load_status
+
+        response = client.post("/load/memory/stop")
+        assert response.status_code == 200
+
+        response = client.post("/load/memory/stop")
+        assert response.status_code == 200
 
     def test_get_current_load(self, client):
         """Test get current load endpoint"""

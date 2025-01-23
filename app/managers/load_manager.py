@@ -11,9 +11,11 @@ class LoadManager:
             os.getcwd(), "app/scripts/memory_stress.py"
         )
 
-        self.cpu_requested = int(os.getenv("CPU_REQUESTED", 0))
+        self.cpu_requested = float(os.getenv("CPU_REQUESTED", 0))
         self.memory_requested = int(os.getenv("MEMORY_REQUESTED", 0))
         self.cpu_processes = []
+        self.cpu_timers = []
+        self.memory_timers = []
         self.memory_process = None
 
         self.memory_at_start = int(os.getenv("INITIAL_MEMORY_LOAD", 50))
@@ -21,8 +23,8 @@ class LoadManager:
         self.memory_duration = int(os.getenv("MEMORY_LOAD_DURATION", 60))
         self.stop_memory_at_end = os.getenv("STOP_MEMORY_LOAD_AT_END", "true") == "true"
 
-        self.cpu_at_start = int(os.getenv("INITIAL_CPU_LOAD", 0))
-        self.cpu_at_end = int(os.getenv("FINAL_CPU_LOAD", 1))
+        self.cpu_at_start = float(os.getenv("INITIAL_CPU_LOAD", 0))
+        self.cpu_at_end = float(os.getenv("FINAL_CPU_LOAD", 1))
         self.cpu_duration = int(os.getenv("CPU_LOAD_DURATION", 60))
         self.stop_cpu_at_end = os.getenv("STOP_CPU_LOAD_AT_END", "true") == "true"
 
@@ -43,6 +45,10 @@ class LoadManager:
                 self.stop_cpu_at_end,
             )
 
+    def __del__(self):
+        self.stop_cpu_load()
+        self.stop_memory_load()
+
     def stop_cpu_load(self):
         for process in self.cpu_processes:
             try:
@@ -51,6 +57,9 @@ class LoadManager:
             except Exception as e:
                 raise RuntimeError(f"Failed to terminate process {process.pid}: {e}")
         self.cpu_processes.clear()
+        for timer in self.cpu_timers:
+            timer.cancel()
+        self.cpu_timers.clear()
         self.cpu_requested = 0
 
     def add_cpu_load(self, value: int):
@@ -75,6 +84,10 @@ class LoadManager:
             try:
                 self.memory_process.terminate()
                 self.memory_process = None
+
+                for timer in self.memory_timers:
+                    timer.cancel()
+                self.memory_timers.clear()
                 self.memory_requested = 0
             except Exception as e:
                 raise RuntimeError(f"Failed to terminate memory stress: {e}")
@@ -110,7 +123,6 @@ class LoadManager:
             raise ValueError(
                 "Arguments 'start_value', 'end_value', 'duration' have to be integers."
             ) from e
-
         num_intervals = duration // 10
 
         if num_intervals < 1:
@@ -127,10 +139,12 @@ class LoadManager:
             self.add_memory_load(int(current_memory))
 
             if interval_num + 1 < num_intervals:
-                Timer(10, apply_dynamic_memory_load, [interval_num + 1]).start()
-            else:
-                if stop_at_end:
-                    self.stop_memory_load
+                timer = Timer(10, apply_dynamic_memory_load, [interval_num + 1])
+                self.memory_timers.append(timer)
+                timer.start()
+            elif stop_at_end:
+                stop_timer = Timer(10, self.stop_memory_load)
+                stop_timer.start()
 
         apply_dynamic_memory_load(0)
 
@@ -164,9 +178,13 @@ class LoadManager:
             self.add_cpu_load(current_cpu)
 
             if interval_num + 1 < num_intervals:
-                Timer(10, apply_dynamic_cpu_load, [interval_num + 1]).start()
-            else:
-                if stop_at_end:
-                    self.stop_cpu_load
+                timer = Timer(10, apply_dynamic_cpu_load, [interval_num + 1])
+                self.cpu_timers.append(timer)
+                timer.start()
+
+            elif stop_at_end:
+                # Correctly schedule stop_memory_load to execute after the last interval
+                stop_timer = Timer(10, self.stop_cpu_load)
+                stop_timer.start()
 
         apply_dynamic_cpu_load(0)

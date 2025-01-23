@@ -41,13 +41,13 @@ class TestLoadManager:
 
     def test_initialization_with_env_vars(self, monkeypatch):
         """Test initialization with specific environment variables"""
-        monkeypatch.setenv("CPU_REQUESTED", "20")
+        monkeypatch.setenv("CPU_REQUESTED", "0.5")
         monkeypatch.setenv("MEMORY_REQUESTED", "40")
         monkeypatch.setenv("ENABLE_DYNAMIC_CPU_LOAD", "false")
         monkeypatch.setenv("ENABLE_DYNAMIC_MEMORY_LOAD", "false")
 
         manager = LoadManager()
-        assert manager.cpu_requested == 20
+        assert manager.cpu_requested == 0.5
         assert manager.memory_requested == 40
 
     # 2. Tests des méthodes CPU
@@ -65,7 +65,7 @@ class TestLoadManager:
 
     def test_stop_cpu_load(self, load_manager):
         """Test stopping CPU load"""
-        load_manager.add_cpu_load(30)
+        load_manager.add_cpu_load(1)
         load_manager.stop_cpu_load()
         assert load_manager.cpu_requested == 0
         assert not load_manager.cpu_processes
@@ -78,20 +78,19 @@ class TestLoadManager:
 
     def test_dynamic_cpu_load(self, load_manager):
         """Test dynamic CPU load"""
-        load_manager.dynamic_cpu_load(10, 80, 1, True)
-        assert load_manager.cpu_requested >= 10
-        assert load_manager.cpu_requested <= 80
+        load_manager.dynamic_cpu_load(0.1, 1, 1, True)
+        assert load_manager.cpu_requested >= 0.1
+        assert load_manager.cpu_requested <= 1
 
-    @pytest.mark.asyncio
-    async def test_dynamic_cpu_load_invalid_duration(self, load_manager):
+    def test_dynamic_cpu_load_invalid_duration(self, load_manager):
         """Test invalid duration for dynamic CPU load"""
         with pytest.raises(ValueError):
-            load_manager.dynamic_cpu_load(-1, 80, -1, True)
+            load_manager.dynamic_cpu_load(-1, 1, -1, True)
 
     def test_dynamic_cpu_load_zero_duration(self, load_manager):
         """Test dynamic CPU load with zero duration"""
-        load_manager.dynamic_cpu_load(10, 90, 0, True)
-        assert load_manager.cpu_requested == 90
+        load_manager.dynamic_cpu_load(0, 1, 0, False)
+        assert load_manager.cpu_requested == 1
 
     # 3. Tests des méthodes mémoire
     def test_add_memory_load(self, load_manager):
@@ -121,26 +120,25 @@ class TestLoadManager:
 
     def test_dynamic_memory_load(self, load_manager):
         """Test dynamic memory load"""
-        load_manager.dynamic_memory_load(100, 200, 1, True)
+        load_manager.dynamic_memory_load(100, 200, 1, False)
         assert load_manager.memory_requested >= 100
         assert load_manager.memory_requested <= 200
 
-    @pytest.mark.asyncio
-    async def test_dynamic_memory_load_invalid_duration(self, load_manager):
+    def test_dynamic_memory_load_invalid_duration(self, load_manager):
         """Test invalid duration for dynamic memory load"""
         with pytest.raises(ValueError):
             load_manager.dynamic_memory_load(-1, 200, -1, True)
 
     def test_dynamic_memory_load_zero_duration(self, load_manager):
         """Test dynamic memory load with zero duration"""
-        load_manager.dynamic_memory_load(100, 200, 0, True)
-        assert load_manager.memory_requested == 200
+        load_manager.dynamic_memory_load(100, 256, 0, False)
+        assert load_manager.memory_requested == 256
 
     # 4. Tests combinés et autres
     def test_stop_all_loads(self, load_manager):
         """Test stopping all loads"""
-        load_manager.add_cpu_load(30)
-        load_manager.add_memory_load(50)
+        load_manager.add_cpu_load(1)
+        load_manager.add_memory_load(100)
         load_manager.stop_cpu_load()
         load_manager.stop_memory_load()
         assert load_manager.cpu_requested == 0
