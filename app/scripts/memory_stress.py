@@ -8,7 +8,6 @@ def allocate_memory(mb):
     block = " " * (mb * 1024 * 1024)
     if not block:
         pass
-    print(f"Allocated {mb}MB of memory.")
     try:
         while True:
             time.sleep(10)
