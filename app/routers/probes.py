@@ -7,8 +7,8 @@ lifecycle_manager = LifecycleManager()
 
 
 @router.get("")
-async def get_probe_statuses():
-    """Get all probe statuses"""
+async def get_probes():
+    """Endpoint to get probe status"""
     return {
         "readiness_status": lifecycle_manager.readiness_status,
         "liveness_status": lifecycle_manager.liveness_status,
@@ -29,7 +29,7 @@ async def liveness_probe():
 
 @router.post("/status")
 async def set_probe_status(request: ProbeRequest):
-    """Set probe status"""
+    """Endpoint to modify probe status"""
     try:
         lifecycle_manager.set_probe_status(request.probe, request.status)
         return {"message": f"{request.probe} set to {request.status}"}

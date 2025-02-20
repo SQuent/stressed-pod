@@ -3,17 +3,18 @@ import logging
 from datetime import datetime, UTC
 from app.managers.log_manager import LogManager, JsonFormatter, PlainTextFormatter
 from app.models.schemas import LogRequest, LogFormat
+import os
+import asyncio
 
 
 class TestLogManager:
     @pytest.fixture
     def log_manager(self):
-        """Fixture pour initialiser LogManager"""
+        """Fixture to initialize LogManager"""
         return LogManager()
 
-    # 1. Tests des formatters
     def test_json_formatter(self):
-        """Test du formatter JSON"""
+        """Test JSON formatter"""
         formatter = JsonFormatter()
         record = logging.LogRecord(
             name="test",
@@ -31,7 +32,7 @@ class TestLogManager:
         assert '"message": "Test message"' in result
 
     def test_plain_text_formatter(self):
-        """Test du formatter en texte brut"""
+        """Test plain text formatter"""
         formatter = PlainTextFormatter()
         record = logging.LogRecord(
             name="test",
@@ -46,9 +47,8 @@ class TestLogManager:
         result = formatter.format(record)
         assert "| INFO | TestService | Test message" in result
 
-    # 2. Tests d'initialisation
     def test_log_manager_initialization(self, log_manager):
-        """Test de l'initialisation de LogManager"""
+        """Test LogManager initialization"""
         assert log_manager.logger.name == "app.managers.log_manager"
         assert log_manager.logger.level == logging.DEBUG
         assert log_manager.current_format == LogFormat.JSON
@@ -56,14 +56,13 @@ class TestLogManager:
         assert isinstance(log_manager.text_formatter, PlainTextFormatter)
 
     def test_initial_handler_setup(self, log_manager):
-        """Test de la configuration initiale du handler"""
+        """Test initial handler setup"""
         assert len(log_manager.logger.handlers) == 1
         assert isinstance(log_manager.logger.handlers[0].formatter, JsonFormatter)
 
-    # 3. Tests de création de logs
     @pytest.mark.asyncio
     async def test_create_log_json_format(self, log_manager):
-        """Test de création de log au format JSON"""
+        """Test log creation in JSON format"""
         log_data = LogRequest(
             message="Test log",
             level="info",
@@ -118,7 +117,6 @@ class TestLogManager:
         result_plaintext = await log_manager.create_log(plaintext_log)
         assert "| INFO | TestService | Plaintext format log" in result_plaintext
 
-    # 5. Tests de log récurrents
     @pytest.mark.asyncio
     async def test_log_creator(self, log_manager):
         """Test de création de logs récurrents"""
@@ -145,7 +143,7 @@ class TestLogManager:
 
     @pytest.mark.asyncio
     async def test_recurring_logs_validation(self, log_manager):
-        """Test la validation des paramètres de logs récurrents"""
+        """Test validation of recurring logs parameters"""
         # Test interval sans duration
         with pytest.raises(ValueError, match="Duration must be set"):
             log_data = LogRequest(message="Test log", level="info", interval=5)
@@ -163,14 +161,12 @@ class TestLogManager:
             )
             await log_manager.create_log(log_data)
 
-        # Test duration négative
         with pytest.raises(ValueError, match="Duration must be greater"):
             log_data = LogRequest(
                 message="Test log", level="info", interval=5, duration=-1
             )
             await log_manager.create_log(log_data)
 
-        # Test interval > duration
         with pytest.raises(ValueError, match="Interval cannot be greater"):
             log_data = LogRequest(
                 message="Test log", level="info", interval=10, duration=5
@@ -179,7 +175,7 @@ class TestLogManager:
 
     @pytest.mark.asyncio
     async def test_recurring_logs(self, log_manager):
-        """Test la création de logs récurrents"""
+        """Test creation of recurring logs"""
         log_data = LogRequest(
             message="Test recurring log", level="info", interval=1, duration=3
         )
@@ -188,3 +184,32 @@ class TestLogManager:
         assert result["message"] == "Recurring log creation started"
         assert result["interval"] == 1
         assert result["duration"] == 3
+
+    @pytest.mark.asyncio
+    async def test_automatic_logs_initialization(self, monkeypatch, caplog):
+        """Test automatic log initialization from environment"""
+        # Setup environment variables
+        monkeypatch.setenv("ENABLE_AUTOMATIC_LOGS", "true")
+        monkeypatch.setenv("LOG_MESSAGE", "Test auto message")
+        monkeypatch.setenv("LOG_LEVEL", "info")
+        monkeypatch.setenv("LOG_SERVICE", "test-service")
+        monkeypatch.setenv("LOG_FORMAT", "json")
+        monkeypatch.setenv("LOG_INTERVAL", "5")
+        monkeypatch.setenv("LOG_DURATION", "60")
+
+        # Create manager with captured logs
+        with caplog.at_level(logging.INFO, logger="app.managers.log_manager"):
+            manager = LogManager()
+            # Wait a bit for the log to be created
+            await asyncio.sleep(0.1)
+            
+        # Verify logs were created with correct configuration
+        assert any("Test auto message" in record.message for record in caplog.records), \
+            "Expected log message not found in records"
+        assert all(record.levelname == "INFO" for record in caplog.records), \
+            "Not all logs are at INFO level"
+        assert all(hasattr(record, "service") and record.service == "test-service" 
+                  for record in caplog.records), \
+            "Service attribute missing or incorrect"
+        assert isinstance(manager.logger.handlers[0].formatter, JsonFormatter), \
+            "Incorrect formatter type"

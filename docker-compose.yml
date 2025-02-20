@@ -23,3 +23,14 @@ services:
       - NODE_NAME=local
       - HOST_IP=127.0.0.1
       - POD_IP=127.0.0.1
+      - ENABLE_AUTOMATIC_LOGS=false
+      - LOG_MESSAGE="Automatic log message"
+      - LOG_LEVEL=info
+      - LOG_SERVICE=auto-logger
+      - LOG_FORMAT=json
+      - LOG_INTERVAL=5
+      - LOG_DURATION=60
+      - READINESS_STATUS=SUCCESS
+      - LIVENESS_STATUS=SUCCESS
+      - ENABLE_AUTO_TERMINATION=false
+      - AUTO_TERMINATION_DELAY=300

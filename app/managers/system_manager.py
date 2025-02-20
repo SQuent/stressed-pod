@@ -1,8 +1,15 @@
 import psutil
 from datetime import datetime, timedelta
+import os
+import asyncio
 
 
 class SystemManager:
+    def __init__(self):
+        if os.getenv("ENABLE_AUTO_TERMINATION", "false").lower() == "true":
+            delay = int(os.getenv("AUTO_TERMINATION_DELAY", "300"))
+            self.terminate(delay)
+    
     def get_system_info(self):
         """Get system information"""
         return {

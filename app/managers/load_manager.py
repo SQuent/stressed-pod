@@ -2,6 +2,7 @@ import os
 import signal
 import subprocess
 from threading import Timer
+import psutil
 
 
 class LoadManager:
@@ -28,7 +29,10 @@ class LoadManager:
         self.cpu_duration = int(os.getenv("CPU_LOAD_DURATION", 60))
         self.stop_cpu_at_end = os.getenv("STOP_CPU_LOAD_AT_END", "true") == "true"
 
-        # Call dynamic load functions during initialization if enabled
+        self.max_duration = 3600
+        self.system_memory = psutil.virtual_memory().total // (1024 * 1024)
+        self.system_cpus = os.cpu_count()
+
         if os.getenv("ENABLE_DYNAMIC_MEMORY_LOAD", "false") == "true":
             self.dynamic_memory_load(
                 self.memory_at_start,
@@ -62,10 +66,12 @@ class LoadManager:
         self.cpu_timers.clear()
         self.cpu_requested = 0
 
-    def add_cpu_load(self, value: int):
-        """Add CPU load"""
-        if value < 0:
+    def add_cpu_load(self, value: float):
+        """Add CPU load with validation"""
+        if value <= 0:
             raise ValueError("CPU load must be greater than 0")
+        if value > self.system_cpus:
+            raise ValueError(f"CPU load cannot exceed system CPU count ({self.system_cpus})")
 
         if not os.path.exists(self.cpu_script_path):
             raise RuntimeError("CPU stress script is missing")
@@ -93,9 +99,11 @@ class LoadManager:
                 raise RuntimeError(f"Failed to terminate memory stress: {e}")
 
     def add_memory_load(self, value: int):
-        """Add memory load"""
-        if value < 0:
+        """Add memory load with validation"""
+        if value <= 0:
             raise ValueError("Memory load must be greater than 0")
+        if value > self.system_memory:
+            raise ValueError(f"Memory load cannot exceed system memory ({self.system_memory}MB)")
 
         if not os.path.exists(self.memory_script_path):
             raise RuntimeError("Memory stress script is missing")
@@ -111,9 +119,11 @@ class LoadManager:
     def dynamic_memory_load(
         self, start_value: int, end_value: int, duration: int, stop_at_end: bool = False
     ):
-        """Dynamic memory load"""
-        if duration < 0:
-            raise ValueError("Duration must be greater than 0")
+        """Dynamic memory load with validation"""
+        if duration <= 0 or duration > self.max_duration:
+            raise ValueError(f"Duration must be between 1 and {self.max_duration} seconds")
+        if end_value < start_value:
+            raise ValueError("End value must be greater than start value")
 
         try:
             start_value = start_value
@@ -149,11 +159,13 @@ class LoadManager:
         apply_dynamic_memory_load(0)
 
     def dynamic_cpu_load(
-        self, start_value: int, end_value: int, duration: int, stop_at_end: bool = False
+        self, start_value: float, end_value: float, duration: int, stop_at_end: bool = False
     ):
-        """Dynamic CPU load"""
-        if duration < 0:
-            raise ValueError("Duration must be greater than 0")
+        """Dynamic CPU load with validation"""
+        if duration <= 0 or duration > self.max_duration:
+            raise ValueError(f"Duration must be between 1 and {self.max_duration} seconds")
+        if end_value < start_value:
+            raise ValueError("End value must be greater than start value")
 
         try:
             start_value = start_value
@@ -183,7 +195,6 @@ class LoadManager:
                 timer.start()
 
             elif stop_at_end:
-                # Correctly schedule stop_memory_load to execute after the last interval
                 stop_timer = Timer(10, self.stop_cpu_load)
                 stop_timer.start()
 
