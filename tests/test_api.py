@@ -6,7 +6,7 @@ client = TestClient(app)
 
 def test_get_pod_info():
     """Test the root endpoint that returns pod info"""
-    response = client.get("/")
+    response = client.get("/system/")
     assert response.status_code == 200
     data = response.json()
     assert "pod_info" in data
@@ -60,7 +60,7 @@ def test_load_endpoints():
     )
     assert response.status_code == 200
 
-    response = client.post("/load/cpu/start", json={"value": 50})
+    response = client.post("/load/cpu/start", json={"value": 0.5})
     assert response.status_code == 200
 
     response = client.post("/load/cpu/stop")
@@ -68,7 +68,7 @@ def test_load_endpoints():
 
     # Test Memory operations
     response = client.post(
-        "/load/cpu/dynamic",
+        "/load/memory/dynamic",
         json={
             "start_value": 100,
             "end_value": 256,

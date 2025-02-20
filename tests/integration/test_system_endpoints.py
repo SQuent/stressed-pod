@@ -12,7 +12,7 @@ class TestSystemEndpoints:
 
     def test_get_system_info(self, client):
         """Test getting system information"""
-        response = client.get("/")
+        response = client.get("/system/")
         assert response.status_code == 200
         data = response.json()
 

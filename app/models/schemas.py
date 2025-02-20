@@ -22,7 +22,9 @@ class DynamicMemoryLoadRequest(BaseModel):
 
 
 class LoadRequest(BaseModel):
-    value: int = Field(..., ge=0, description="Load value (CPU cores or MB of memory)")
+    value: float = Field(
+        ..., ge=0, description="Load value (CPU cores or MB of memory)"
+    )
 
 
 class ProbeRequest(BaseModel):
@@ -34,7 +36,6 @@ class TerminateRequest(BaseModel):
     seconds: int = Field(0, ge=0, description="Delay before termination in seconds")
 
 
-# Nouveaux schémas pour les logs
 class LogResponse(BaseModel):
     status_code: int = Field(..., description="Code HTTP de la réponse")
     detail: str = Field(..., description="Description détaillée de l'erreur")
@@ -59,17 +60,17 @@ class LogFormat(str, Enum):
 
 
 class LogRequest(BaseModel):
-    """Schéma de requête pour la création de logs"""
+    """Request schema for log creation"""
 
-    message: str = Field(..., description="Message de log")
-    level: LogLevel = Field(..., description="Niveau de log")
-    service: str | None = Field(None, description="Nom du service (optionnel)")
-    format: LogFormat = Field(default=LogFormat.JSON, description="Format de sortie")
+    message: str = Field(..., description="Log message")
+    level: LogLevel = Field(..., description="Log level")
+    service: str | None = Field(None, description="Service name (optional)")
+    format: LogFormat = Field(default=LogFormat.JSON, description="Output format")
     interval: int | None = Field(
-        None, description="Intervalle entre chaque log en secondes (optionnel)"
+        None, description="Interval between each log in seconds (optional)"
     )
     duration: int | None = Field(
-        None, description="Durée d'envoi des logs en secondes (optionnel)"
+        None, description="Log sending duration in seconds (optional)"
     )
 
     class Config:
@@ -77,9 +78,9 @@ class LogRequest(BaseModel):
             "example": {
                 "message": "Test log message",
                 "level": "info",
-                "service": "my-service",  # optionnel
-                "format": "json",  # optionnel, défaut: "json"
-                "interval": 5,  # optionnel
-                "duration": 60,  # optionnel
+                "service": "my-service",
+                "format": "json",
+                "interval": 5,
+                "duration": 60,
             }
         }

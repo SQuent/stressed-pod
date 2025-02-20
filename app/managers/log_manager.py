@@ -1,13 +1,14 @@
 import logging
 import json
 from datetime import datetime, UTC
+import time
+import os
 from ..models.schemas import LogRequest, LogFormat
 import asyncio
-import time
 
 
 class JsonFormatter(logging.Formatter):
-    """Formatter personnalisé pour les logs JSON"""
+    """Custom formatter for JSON logs"""
 
     def format(self, record):
         return json.dumps(
@@ -21,7 +22,7 @@ class JsonFormatter(logging.Formatter):
 
 
 class PlainTextFormatter(logging.Formatter):
-    """Formatter personnalisé pour le texte plat"""
+    """Custom formatter for plain text logs"""
 
     def format(self, record):
         return f"{self.formatTime(record)} | {record.levelname} | {getattr(record, 'service', '-')} | {record.getMessage()}"
@@ -36,11 +37,14 @@ class LogManager:
         self.json_formatter = JsonFormatter()
 
         self._setup_handler(LogFormat.JSON)
-
         self.current_format = LogFormat.JSON
 
+        # Start automatic logging if enabled
+        if os.getenv("ENABLE_AUTOMATIC_LOGS", "false").lower() == "true":
+            self._start_automatic_logs()
+
     def _setup_handler(self, format_type: LogFormat):
-        """Configure un nouveau handler avec le format spécifié"""
+        """Configure a new handler with the specified format"""
         for handler in self.logger.handlers[:]:
             self.logger.removeHandler(handler)
 
@@ -73,6 +77,30 @@ class LogManager:
         if interval and duration and interval > duration:
             raise ValueError("Interval cannot be greater than duration")
 
+    def _start_automatic_logs(self):
+        """Initialize automatic logging based on environment variables"""
+        log_data = LogRequest(
+            message=os.getenv("LOG_MESSAGE", "Automatic log message"),
+            level=os.getenv("LOG_LEVEL", "info").lower(),
+            service=os.getenv("LOG_SERVICE", "auto-logger"),
+            format=LogFormat(os.getenv("LOG_FORMAT", "json").lower()),
+            interval=int(os.getenv("LOG_INTERVAL", "5")),
+            duration=int(os.getenv("LOG_DURATION", "60")),
+        )
+
+        # Create single log immediately
+        asyncio.create_task(
+            self._create_single_log(log_data, getattr(logging, log_data.level.upper()))
+        )
+
+        # Setup recurring logs if needed
+        if log_data.interval and log_data.duration:
+            asyncio.create_task(
+                self._create_recurring_logs(
+                    log_data, log_data.interval, log_data.duration
+                )
+            )
+
     async def create_log(self, log_data: LogRequest) -> dict | str:
         """Create log"""
         level = getattr(logging, log_data.level.upper())
@@ -96,7 +124,7 @@ class LogManager:
     async def _create_recurring_logs(
         self, log_data: LogRequest, interval: int, duration: int
     ):
-        """Crée des logs de manière récurrente"""
+        """Create logs at regular intervals"""
         end_time = time.time() + duration
         while time.time() < end_time:
             await self._create_single_log(
@@ -105,7 +133,7 @@ class LogManager:
             await asyncio.sleep(interval)
 
     async def _create_single_log(self, log_data: LogRequest, level: int) -> dict | str:
-        """Crée un seul log"""
+        """Create a single log"""
         try:
             timestamp = datetime.now(UTC).isoformat()
 
@@ -138,7 +166,7 @@ class LogManager:
         return level.lower() in valid_levels
 
     async def log_creator(self, log_data: LogRequest, interval: int, duration: int):
-        """Ffunction to create multiple log log"""
+        """Function to create multiple logs"""
         end_time = time.time() + duration
         while time.time() < end_time:
             await self.create_log(log_data)

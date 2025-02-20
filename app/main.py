@@ -2,8 +2,8 @@ from fastapi import FastAPI
 from .routers import load_router, probes_router, system_router, log_router
 
 app = FastAPI(
-    title="Load Testing API",
-    description="API for managing CPU and memory loads, and lifecycle probes",
+    title="Stressed API",
+    description="simulates controlled workloads and failures to stress-test a system",
     version="1.0.0",
 )
 
