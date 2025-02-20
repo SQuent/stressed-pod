@@ -18,16 +18,6 @@ plugins:
             numMatches: 1
             numReplacements: 1
         countMatches: true
-      - files:
-        - "pyproject.toml"
-        from: "version_variable = \\[\\s*\"pyproject.toml:version\"\\s*\\]"
-        to: "version_variable = [\"pyproject.toml:version\"]"
-        results:
-          - file: "pyproject.toml"
-            hasChanged: true
-            numMatches: 1
-            numReplacements: 1
-        countMatches: true
   - 
     - "@codedependant/semantic-release-docker"
     -  dockerRegistry: "ghcr.io"
