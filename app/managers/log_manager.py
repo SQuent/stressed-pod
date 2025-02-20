@@ -85,19 +85,20 @@ class LogManager:
             service=os.getenv("LOG_SERVICE", "auto-logger"),
             format=LogFormat(os.getenv("LOG_FORMAT", "json").lower()),
             interval=int(os.getenv("LOG_INTERVAL", "5")),
-            duration=int(os.getenv("LOG_DURATION", "60"))
+            duration=int(os.getenv("LOG_DURATION", "60")),
         )
-        
+
         # Create single log immediately
-        asyncio.create_task(self._create_single_log(
-            log_data, 
-            getattr(logging, log_data.level.upper())
-        ))
+        asyncio.create_task(
+            self._create_single_log(log_data, getattr(logging, log_data.level.upper()))
+        )
 
         # Setup recurring logs if needed
         if log_data.interval and log_data.duration:
             asyncio.create_task(
-                self._create_recurring_logs(log_data, log_data.interval, log_data.duration)
+                self._create_recurring_logs(
+                    log_data, log_data.interval, log_data.duration
+                )
             )
 
     async def create_log(self, log_data: LogRequest) -> dict | str:

@@ -162,6 +162,7 @@ class TestLoadManager:
 
     def test_add_cpu_load_script_missing(self, load_manager, monkeypatch):
         """Test failure when cpu_stress.py is missing"""
+
         def mock_exists(path):
             return False
 
@@ -233,4 +234,6 @@ class TestLoadManager:
 
         # Test with maximum duration
         with pytest.raises(ValueError, match="Duration must be between 1 and"):
-            load_manager.dynamic_memory_load(100, 200, 3601, True)  # Duration exceeds max_duration
+            load_manager.dynamic_memory_load(
+                100, 200, 3601, True
+            )  # Duration exceeds max_duration

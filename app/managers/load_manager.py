@@ -71,7 +71,9 @@ class LoadManager:
         if value <= 0:
             raise ValueError("CPU load must be greater than 0")
         if value > self.system_cpus:
-            raise ValueError(f"CPU load cannot exceed system CPU count ({self.system_cpus})")
+            raise ValueError(
+                f"CPU load cannot exceed system CPU count ({self.system_cpus})"
+            )
 
         if not os.path.exists(self.cpu_script_path):
             raise RuntimeError("CPU stress script is missing")
@@ -103,7 +105,9 @@ class LoadManager:
         if value <= 0:
             raise ValueError("Memory load must be greater than 0")
         if value > self.system_memory:
-            raise ValueError(f"Memory load cannot exceed system memory ({self.system_memory}MB)")
+            raise ValueError(
+                f"Memory load cannot exceed system memory ({self.system_memory}MB)"
+            )
 
         if not os.path.exists(self.memory_script_path):
             raise RuntimeError("Memory stress script is missing")
@@ -121,7 +125,9 @@ class LoadManager:
     ):
         """Dynamic memory load with validation"""
         if duration <= 0 or duration > self.max_duration:
-            raise ValueError(f"Duration must be between 1 and {self.max_duration} seconds")
+            raise ValueError(
+                f"Duration must be between 1 and {self.max_duration} seconds"
+            )
         if end_value < start_value:
             raise ValueError("End value must be greater than start value")
 
@@ -159,11 +165,17 @@ class LoadManager:
         apply_dynamic_memory_load(0)
 
     def dynamic_cpu_load(
-        self, start_value: float, end_value: float, duration: int, stop_at_end: bool = False
+        self,
+        start_value: float,
+        end_value: float,
+        duration: int,
+        stop_at_end: bool = False,
     ):
         """Dynamic CPU load with validation"""
         if duration <= 0 or duration > self.max_duration:
-            raise ValueError(f"Duration must be between 1 and {self.max_duration} seconds")
+            raise ValueError(
+                f"Duration must be between 1 and {self.max_duration} seconds"
+            )
         if end_value < start_value:
             raise ValueError("End value must be greater than start value")
 

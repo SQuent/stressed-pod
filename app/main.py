@@ -3,7 +3,7 @@ from .routers import load_router, probes_router, system_router, log_router
 
 app = FastAPI(
     title="Stressed API",
-    description="The API simulates controlled workloads and failures to stress-test a system, assessing its resilience, performance, and recovery capabilities.",
+    description="simulates controlled workloads and failures to stress-test a system",
     version="1.0.0",
 )
 

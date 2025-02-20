@@ -22,7 +22,9 @@ class DynamicMemoryLoadRequest(BaseModel):
 
 
 class LoadRequest(BaseModel):
-    value: float = Field(..., ge=0, description="Load value (CPU cores or MB of memory)")
+    value: float = Field(
+        ..., ge=0, description="Load value (CPU cores or MB of memory)"
+    )
 
 
 class ProbeRequest(BaseModel):

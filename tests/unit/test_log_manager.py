@@ -3,7 +3,6 @@ import logging
 from datetime import datetime, UTC
 from app.managers.log_manager import LogManager, JsonFormatter, PlainTextFormatter
 from app.models.schemas import LogRequest, LogFormat
-import os
 import asyncio
 
 
@@ -202,14 +201,18 @@ class TestLogManager:
             manager = LogManager()
             # Wait a bit for the log to be created
             await asyncio.sleep(0.1)
-            
+
         # Verify logs were created with correct configuration
-        assert any("Test auto message" in record.message for record in caplog.records), \
-            "Expected log message not found in records"
-        assert all(record.levelname == "INFO" for record in caplog.records), \
-            "Not all logs are at INFO level"
-        assert all(hasattr(record, "service") and record.service == "test-service" 
-                  for record in caplog.records), \
-            "Service attribute missing or incorrect"
-        assert isinstance(manager.logger.handlers[0].formatter, JsonFormatter), \
-            "Incorrect formatter type"
+        assert any(
+            "Test auto message" in record.message for record in caplog.records
+        ), "Expected log message not found in records"
+        assert all(
+            record.levelname == "INFO" for record in caplog.records
+        ), "Not all logs are at INFO level"
+        assert all(
+            hasattr(record, "service") and record.service == "test-service"
+            for record in caplog.records
+        ), "Service attribute missing or incorrect"
+        assert isinstance(
+            manager.logger.handlers[0].formatter, JsonFormatter
+        ), "Incorrect formatter type"
