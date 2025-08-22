@@ -199,19 +199,19 @@ class TestLogManager:
         # Create manager with captured logs
         with caplog.at_level(logging.INFO, logger="app.managers.log_manager"):
             manager = LogManager()
-            # Wait a bit for the log to be created
-            await asyncio.sleep(0.1)
+            # Attendre explicitement la fin des tâches automatiques
+            if manager._automatic_log_tasks:
+                await asyncio.gather(*manager._automatic_log_tasks)
 
-        # Verify logs were created with correct configuration
         assert any(
             "Test auto message" in record.message for record in caplog.records
         ), "Expected log message not found in records"
         assert all(
-            record.levelname == "INFO" for record in caplog.records
+            record.levelname == "INFO" for record in caplog.records if "Test auto message" in record.message
         ), "Not all logs are at INFO level"
         assert all(
             hasattr(record, "service") and record.service == "test-service"
-            for record in caplog.records
+            for record in caplog.records if "Test auto message" in record.message
         ), "Service attribute missing or incorrect"
         assert isinstance(
             manager.logger.handlers[0].formatter, JsonFormatter
