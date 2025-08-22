@@ -10,8 +10,8 @@ plugins:
     - replacements:
       - files:
         - "pyproject.toml"
-        from: "(?<=\[tool\.poetry\]\n(?:.*\n)*)version = '.*'"
-        to: "version = '${nextRelease.version}'"
+        from: '(?<=\[tool\.poetry\]\n(?:.*\n)*)version = ".*"'
+        to: 'version = "${nextRelease.version}"'
         results:
           - file: "pyproject.toml"
             hasChanged: true
