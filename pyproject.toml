@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "app"
-version = "1.0.0"
+version = '1.0.1'
 description = "StressedPod: Simulate workloads on Kuvbernetes"
 authors = ["Quentin SALLIO <q.sallio@gmail.com>"]
 
