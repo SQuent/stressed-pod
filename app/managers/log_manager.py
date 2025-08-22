@@ -39,6 +39,9 @@ class LogManager:
         self._setup_handler(LogFormat.JSON)
         self.current_format = LogFormat.JSON
 
+        # Store references to automatic log tasks
+        self._automatic_log_tasks = []
+
         # Start automatic logging if enabled
         if os.getenv("ENABLE_AUTOMATIC_LOGS", "false").lower() == "true":
             self._start_automatic_logs()
@@ -89,17 +92,19 @@ class LogManager:
         )
 
         # Create single log immediately
-        asyncio.create_task(
+        task_single = asyncio.create_task(
             self._create_single_log(log_data, getattr(logging, log_data.level.upper()))
         )
+        self._automatic_log_tasks.append(task_single)
 
         # Setup recurring logs if needed
         if log_data.interval and log_data.duration:
-            asyncio.create_task(
+            task_recurring = asyncio.create_task(
                 self._create_recurring_logs(
                     log_data, log_data.interval, log_data.duration
                 )
             )
+            self._automatic_log_tasks.append(task_recurring)
 
     async def create_log(self, log_data: LogRequest) -> dict | str:
         """Create log"""
