@@ -1,5 +1,5 @@
 # Build stage
-FROM python:3.12-slim as builder
+FROM python:3.14-slim as builder
 
 WORKDIR /app
 
@@ -26,7 +26,7 @@ COPY pyproject.toml poetry.lock* ./
 RUN poetry install --no-dev --no-root
 
 # Final stage
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 RUN useradd --create-home appuser
 
